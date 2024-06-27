@@ -31,6 +31,41 @@ let RolesService = class RolesService {
         }
         return this.roleRepository.save(role);
     }
+    async findAll() {
+        return await this.roleRepository.find({ relations: ['permissions'] });
+    }
+    async update(id, body) {
+        const role = await this.roleRepository.findOne({ where: { id } });
+        if (!role) {
+            throw new Error(`Permission with id ${id} not found`);
+        }
+        this.roleRepository.merge(role, body);
+        return this.roleRepository.save(role);
+    }
+    async delete(id) {
+        const result = await this.roleRepository.delete(id);
+        if (result.affected === 0) {
+            throw new common_1.NotFoundException(`Permission with id ${id} not found`);
+        }
+    }
+    async assignPermissionToRole(roleId, permissionId) {
+        const role = await this.roleRepository.findOne({
+            where: { id: roleId },
+            relations: ['permissions'],
+        });
+        if (!role) {
+            throw new common_1.NotFoundException(`Role with ID ${roleId} not found`);
+        }
+        const permission = await this.permissionRepository.findOne({ where: { id: permissionId } });
+        if (!permission) {
+            throw new common_1.NotFoundException(`Permission with ID ${permissionId} not found`);
+        }
+        if (role.permissions.find(p => p.id === permission.id)) {
+            throw new common_1.ConflictException(`Permission with ID ${permissionId} is already assigned to Role with ID ${roleId}`);
+        }
+        role.permissions.push(permission);
+        return this.roleRepository.save(role);
+    }
 };
 exports.RolesService = RolesService;
 exports.RolesService = RolesService = __decorate([

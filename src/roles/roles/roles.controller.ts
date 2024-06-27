@@ -1,4 +1,4 @@
-import { Controller, Post, Body, ConflictException, Get, Put, Param, ParseIntPipe, NotFoundException, Delete } from '@nestjs/common';
+import { Controller, Post, Body, ConflictException, Get, Put, Param, ParseIntPipe, NotFoundException, Delete, BadRequestException } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { RoleEntity } from 'src/entities/role.entity';
 
@@ -44,5 +44,21 @@ export class RolesController {
         } catch(error) {
             throw new NotFoundException(error.message)
         }
+    }
+
+    @Post(':id/permissions')
+    async assignPermissionToRole(
+        @Param('id', ParseIntPipe) roleId: number,
+        @Body('permissionId', ParseIntPipe) permissionId: number
+    ): Promise<RoleEntity> {
+        if (!permissionId) {
+            throw new BadRequestException('Permission ID is required');
+        }
+
+        const updatedRole = await this.service.assignPermissionToRole(roleId, permissionId);
+        if (!updatedRole) {
+            throw new NotFoundException('Role or Permission not found');
+        }
+        return updatedRole;
     }
 }

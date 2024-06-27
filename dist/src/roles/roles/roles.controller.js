@@ -19,7 +19,7 @@ let RolesController = class RolesController {
     constructor(service) {
         this.service = service;
     }
-    async createRole(role) {
+    async create(role) {
         try {
             return await this.service.create(role);
         }
@@ -30,6 +30,35 @@ let RolesController = class RolesController {
             throw error;
         }
     }
+    async findAll() {
+        return await this.service.findAll();
+    }
+    async update(id, body) {
+        try {
+            return await this.service.update(id, body);
+        }
+        catch (error) {
+            throw new common_1.NotFoundException(error.message);
+        }
+    }
+    async delete(id) {
+        try {
+            await this.service.delete(id);
+        }
+        catch (error) {
+            throw new common_1.NotFoundException(error.message);
+        }
+    }
+    async assignPermissionToRole(roleId, permissionId) {
+        if (!permissionId) {
+            throw new common_1.BadRequestException('Permission ID is required');
+        }
+        const updatedRole = await this.service.assignPermissionToRole(roleId, permissionId);
+        if (!updatedRole) {
+            throw new common_1.NotFoundException('Role or Permission not found');
+        }
+        return updatedRole;
+    }
 };
 exports.RolesController = RolesController;
 __decorate([
@@ -38,7 +67,36 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], RolesController.prototype, "createRole", null);
+], RolesController.prototype, "create", null);
+__decorate([
+    (0, common_1.Get)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], RolesController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Put)(':id'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", Promise)
+], RolesController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], RolesController.prototype, "delete", null);
+__decorate([
+    (0, common_1.Post)(':id/permissions'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)('permissionId', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", Promise)
+], RolesController.prototype, "assignPermissionToRole", null);
 exports.RolesController = RolesController = __decorate([
     (0, common_1.Controller)('roles'),
     __metadata("design:paramtypes", [roles_service_1.RolesService])
